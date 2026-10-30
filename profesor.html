@@ -1,0 +1,235 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Marcador del profe · La web rota</title>
+  <meta name="robots" content="noindex">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/juego.css">
+  <style>
+    .profe { flex: 1; width: min(1200px, 100%); margin: 0 auto; padding: 22px 16px 40px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 18px; align-items: start; }
+    .profe h2 { margin: 0 0 12px; font: 700 1.3rem var(--titulos); }
+    .profe__columna { display: grid; gap: 18px; }
+
+    .cuenta { text-align: center; }
+    .cuenta__tiempo { margin: 4px 0 14px; font: 700 clamp(3rem, 9vw, 5.5rem)/1 var(--mono); font-variant-numeric: tabular-nums; color: var(--amarillo); }
+    .cuenta__tiempo--fin { color: var(--rojo); animation: latir 1s infinite; }
+    @keyframes latir { 50% { opacity: .35; } }
+    .cuenta__botones { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+    .fases { list-style: none; padding: 0; margin: 16px 0 0; display: grid; gap: 4px; text-align: left; font-size: .92rem; }
+    .fases li { display: flex; justify-content: space-between; gap: 10px; padding: 6px 10px; border-radius: 8px; color: var(--suave); }
+    .fases li b { color: var(--texto); font-weight: 600; }
+    .fases__item--actual { background: #ffd23f1f; outline: 1px solid var(--amarillo); }
+    .fases__item--actual b { color: var(--amarillo) !important; }
+
+    .registro { display: grid; gap: 10px; }
+    .registro label { font-weight: 600; font-size: .9rem; display: block; margin-bottom: 4px; }
+    .registro input {
+      width: 100%; font: inherit; padding: .55em .8em; border-radius: 10px;
+      border: 2px solid var(--borde); background: var(--codigo); color: var(--texto);
+    }
+    .registro input:focus { border-color: var(--amarillo); outline: none; }
+    #codigo { font-family: var(--mono); text-transform: uppercase; letter-spacing: .06em; }
+    .registro__msg { margin: 0; min-height: 1.4em; font-weight: 600; }
+    .registro__msg--ok { color: var(--verde); }
+    .registro__msg--mal { color: var(--rojo); }
+
+    .ranking { list-style: none; padding: 0; margin: 0; display: grid; gap: 8px; }
+    .ranking__fila {
+      display: grid; grid-template-columns: 44px minmax(0, 1fr) auto auto; align-items: center; gap: 12px;
+      padding: 10px 14px; border-radius: 12px; background: var(--panel-2); border: 1px solid var(--borde);
+    }
+    .ranking__fila:nth-child(1) { border-color: var(--amarillo); background: #ffd23f14; }
+    .ranking__pos { font: 700 1.4rem var(--mono); color: var(--suave); text-align: center; }
+    .ranking__fila:nth-child(1) .ranking__pos { color: var(--amarillo); }
+    .ranking__nombre { font-weight: 700; font-size: 1.1rem; overflow-wrap: anywhere; }
+    .ranking__info { display: block; color: var(--suave); font-size: .82rem; font-weight: 400; }
+    .ranking__puntos { font: 700 1.6rem var(--mono); }
+    .ranking__ajustes { display: flex; gap: 4px; }
+    .ranking__ajustes button { width: 34px; height: 34px; border-radius: 8px; border: 1px solid var(--borde); background: var(--codigo); color: var(--texto); font-weight: 700; }
+    .ranking__ajustes button:hover { border-color: var(--suave); }
+    .ranking__vacio { color: var(--suave); padding: 20px; text-align: center; border: 1px dashed var(--borde); border-radius: 12px; }
+    .etiqueta { display: inline-block; padding: 1px 8px; border-radius: 999px; font-size: .75rem; font-weight: 700; margin-left: 6px; vertical-align: middle; }
+    .etiqueta--fin { background: var(--verde); color: #0b1d10; }
+    .etiqueta--parcial { background: var(--panel); color: var(--suave); border: 1px solid var(--borde); }
+
+    .nota { color: var(--suave); font-size: .88rem; margin: 10px 0 0; }
+
+    /* Modo proyector: solo cuenta atrás y ranking, en grande */
+    body.proyector .registro-tarjeta, body.proyector .ranking__ajustes, body.proyector .nota, body.proyector .pie { display: none; }
+    body.proyector .profe { width: min(1600px, 100%); }
+    body.proyector .ranking__nombre { font-size: 1.5rem; }
+    body.proyector .ranking__puntos { font-size: 2.2rem; }
+    body.proyector .ranking__fila { grid-template-columns: 60px minmax(0, 1fr) auto; padding: 14px 20px; }
+
+    @media (max-width: 900px) { .profe { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <header class="barra">
+    <div class="barra__marca"><span class="barra__cinta" aria-hidden="true"></span><span>LA WEB ROTA · MARCADOR</span></div>
+    <div class="barra__datos"></div>
+    <button class="boton boton--fantasma boton--mini" id="proyector" type="button">📽 Modo proyector</button>
+  </header>
+
+  <main class="profe">
+    <div class="profe__columna">
+      <section class="tarjeta-juego cuenta">
+        <h2>Cuenta atrás</h2>
+        <p class="cuenta__tiempo" id="tiempo">50:00</p>
+        <div class="cuenta__botones">
+          <button class="boton" id="iniciar" type="button">▶ Iniciar</button>
+          <button class="boton boton--fantasma" id="reiniciar-tiempo" type="button">↺ Reiniciar</button>
+        </div>
+        <ol class="fases" id="fases"></ol>
+      </section>
+
+      <section class="tarjeta-juego registro-tarjeta">
+        <h2>Registrar equipo</h2>
+        <form class="registro" id="form-registro" autocomplete="off">
+          <div><label for="equipo">Nombre del equipo (tal como lo escribieron)</label><input id="equipo" required></div>
+          <div><label for="codigo">Código de la pantalla de Salida</label><input id="codigo" placeholder="258-F-TEHU" required></div>
+          <button class="boton" type="submit">Validar y añadir</button>
+          <p class="registro__msg" id="msg"></p>
+        </form>
+        <p class="nota">El código lleva una firma que depende del nombre del equipo y de los puntos, así que si alguien se inventa la cifra no valida. F = han salido · P = puntuación provisional. Si un equipo vuelve a registrarse, se actualiza su fila.</p>
+      </section>
+    </div>
+
+    <section class="tarjeta-juego">
+      <h2>Clasificación</h2>
+      <ol class="ranking" id="ranking"></ol>
+      <p class="nota">Usa ＋/− para bonus o penalizaciones de 5 puntos (primer equipo en salir, comodín «consulta a otro equipo», etc.). Máximo del juego: 285 pts. Los datos se guardan en este navegador.</p>
+      <p class="nota"><button class="pie__reiniciar" id="borrar" type="button">Borrar toda la clasificación</button></p>
+    </section>
+  </main>
+
+  <footer class="pie"><span>Marcador del profe · solo funciona en el navegador donde lo abras</span><a class="pie__reiniciar" href="./">Ir al juego</a></footer>
+
+  <script src="js/datos.js"></script>
+  <script>
+    "use strict";
+    const S = JSON.parse(atob(SECRETOS.split("").reverse().join("")));
+    const CLAVE = "webrota-profe-v1";
+    const DURACION = 50 * 60;
+    const FASES = [
+      ["Arranque y equipos", 0, 5],
+      ["Prueba 1 · Selectores", 5, 15],
+      ["Prueba 2 · Position", 15, 32],
+      ["Prueba 3 · BEM", 32, 44],
+      ["Salida y repaso", 44, 50]
+    ];
+    const $ = (s) => document.querySelector(s);
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+    function hash(s) {
+      let h = 2166136261 >>> 0;
+      for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; }
+      return h;
+    }
+    function codigoVerificacion(equipo, puntos, completo) {
+      const nombre = equipo.trim().toLowerCase().replace(/\s+/g, " ");
+      const firma = (hash(`${nombre}|${puntos}|${completo ? 1 : 0}|${S.sal}`) % 1679616).toString(36).toUpperCase().padStart(4, "0");
+      return `${puntos}-${completo ? "F" : "P"}-${firma}`;
+    }
+
+    let D = { equipos: [], cuenta: { inicio: null, acumulado: 0 } };
+    try { D = JSON.parse(localStorage.getItem(CLAVE)) || D; } catch (e) { /* sin datos */ }
+    const guardar = () => { try { localStorage.setItem(CLAVE, JSON.stringify(D)); } catch (e) { /* nada */ } };
+
+    /* Cuenta atrás -------------------------------------------------------- */
+    const transcurrido = () => D.cuenta.acumulado + (D.cuenta.inicio ? (Date.now() - D.cuenta.inicio) / 1000 : 0);
+    function pintarCuenta() {
+      const t = transcurrido();
+      const quedan = Math.max(0, Math.ceil(DURACION - t));
+      const el = $("#tiempo");
+      el.textContent = `${String(Math.floor(quedan / 60)).padStart(2, "0")}:${String(quedan % 60).padStart(2, "0")}`;
+      el.classList.toggle("cuenta__tiempo--fin", quedan === 0);
+      $("#iniciar").textContent = D.cuenta.inicio ? "⏸ Pausar" : (t > 0 ? "▶ Reanudar" : "▶ Iniciar");
+      const min = t / 60;
+      $("#fases").innerHTML = FASES.map(([n, a, b]) =>
+        `<li class="${min >= a && min < b && t > 0 ? "fases__item--actual" : ""}"><b>${n}</b><span>${a}–${b} min</span></li>`).join("");
+    }
+    $("#iniciar").addEventListener("click", () => {
+      if (D.cuenta.inicio) { D.cuenta.acumulado = transcurrido(); D.cuenta.inicio = null; }
+      else D.cuenta.inicio = Date.now();
+      guardar(); pintarCuenta();
+    });
+    $("#reiniciar-tiempo").addEventListener("click", () => {
+      if (!confirm("¿Reiniciar la cuenta atrás a 50:00?")) return;
+      D.cuenta = { inicio: null, acumulado: 0 }; guardar(); pintarCuenta();
+    });
+    setInterval(pintarCuenta, 500);
+
+    /* Registro y ranking ---------------------------------------------------- */
+    function pintarRanking() {
+      const lista = [...D.equipos].sort((a, b) =>
+        (b.puntos + b.ajuste) - (a.puntos + a.ajuste) || (b.completo - a.completo) || (a.hora - b.hora));
+      $("#ranking").innerHTML = lista.length ? lista.map((e, i) => `
+        <li class="ranking__fila">
+          <span class="ranking__pos">${i + 1}</span>
+          <span class="ranking__nombre">${esc(e.equipo)}
+            <span class="etiqueta ${e.completo ? "etiqueta--fin" : "etiqueta--parcial"}">${e.completo ? "SALIÓ" : "PARCIAL"}</span>
+            <span class="ranking__info">${e.puntos} pts del juego${e.ajuste ? ` ${e.ajuste > 0 ? "+" : "−"} ${Math.abs(e.ajuste)} de ajuste` : ""} · ${new Date(e.hora).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}</span>
+          </span>
+          <span class="ranking__puntos">${e.puntos + e.ajuste}</span>
+          <span class="ranking__ajustes">
+            <button type="button" data-id="${e.id}" data-d="5" aria-label="Sumar 5">＋</button>
+            <button type="button" data-id="${e.id}" data-d="-5" aria-label="Restar 5">−</button>
+            <button type="button" data-id="${e.id}" data-d="x" aria-label="Eliminar">✕</button>
+          </span>
+        </li>`).join("") : `<li class="ranking__vacio">Todavía no hay equipos registrados.</li>`;
+    }
+
+    $("#ranking").addEventListener("click", (ev) => {
+      const b = ev.target.closest("button[data-id]");
+      if (!b) return;
+      const e = D.equipos.find((x) => x.id === b.dataset.id);
+      if (!e) return;
+      if (b.dataset.d === "x") {
+        if (!confirm(`¿Eliminar a «${e.equipo}» de la clasificación?`)) return;
+        D.equipos = D.equipos.filter((x) => x !== e);
+      } else e.ajuste += Number(b.dataset.d);
+      guardar(); pintarRanking();
+    });
+
+    $("#form-registro").addEventListener("submit", (ev) => {
+      ev.preventDefault();
+      const msg = $("#msg");
+      const equipo = $("#equipo").value.trim();
+      const codigo = $("#codigo").value.trim().toUpperCase().replace(/\s+/g, "");
+      const m = codigo.match(/^(\d+)-([FP])-([0-9A-Z]{4})$/);
+      const valido = m && codigoVerificacion(equipo, Number(m[1]), m[2] === "F") === codigo;
+      if (!valido) {
+        msg.className = "registro__msg registro__msg--mal";
+        msg.textContent = "✘ El código no corresponde a ese equipo. Revisa el nombre (exacto) y el código.";
+        return;
+      }
+      const clave = equipo.toLowerCase().replace(/\s+/g, " ");
+      let e = D.equipos.find((x) => x.equipo.toLowerCase().replace(/\s+/g, " ") === clave);
+      if (!e) { e = { id: String(Date.now()), equipo, ajuste: 0 }; D.equipos.push(e); }
+      Object.assign(e, { puntos: Number(m[1]), completo: m[2] === "F", hora: Date.now() });
+      guardar(); pintarRanking();
+      msg.className = "registro__msg registro__msg--ok";
+      msg.textContent = `✔ ${equipo}: ${m[1]} pts ${m[2] === "F" ? "(han salido)" : "(provisional)"}`;
+      ev.target.reset();
+      $("#equipo").focus();
+    });
+
+    $("#borrar").addEventListener("click", () => {
+      if (!confirm("¿Borrar todos los equipos de la clasificación?")) return;
+      D.equipos = []; guardar(); pintarRanking();
+    });
+    $("#proyector").addEventListener("click", () => {
+      document.body.classList.toggle("proyector");
+      $("#proyector").textContent = document.body.classList.contains("proyector") ? "✕ Salir del modo proyector" : "📽 Modo proyector";
+    });
+
+    pintarCuenta();
+    pintarRanking();
+  </script>
+</body>
+</html>

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>La web rota · Escape room CSS</title>
+  <meta name="description" content="Escape room por equipos para repasar position, selectores CSS y metodología BEM.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/juego.css">
+</head>
+<body>
+
+  <!-- Barra superior: equipo, tiempo, puntos y llavero con las piezas -->
+  <header class="barra">
+    <div class="barra__marca">
+      <span class="barra__cinta" aria-hidden="true"></span>
+      <span>LA WEB ROTA</span>
+    </div>
+    <div class="barra__datos" id="datos" hidden>
+      <span class="barra__equipo" id="equipo"></span>
+      <span class="barra__dato" title="Tiempo de juego">⏱ <b id="reloj">00:00</b></span>
+      <span class="barra__dato" title="Puntos">★ <b id="puntos">0</b> pts</span>
+    </div>
+    <div class="llavero" id="llavero" hidden aria-label="Piezas de la contraseña"></div>
+  </header>
+
+  <!-- Pantalla de inicio -->
+  <section class="inicio" id="inicio">
+    <div class="inicio__caja">
+      <p class="inicio__aviso">⚠ INCIDENCIA CRÍTICA · PRODUCCIÓN CAÍDA</p>
+      <h1 class="inicio__titulo">La web rota</h1>
+      <p class="inicio__historia">
+        Un <code>git push --force</code> a deshoras ha destrozado la web de <b>Taller Web</b>:
+        los selectores apuntan donde no deben, todo está descolocado y las clases son un caos.
+        Vuestro equipo tiene que repararla. Cada prueba superada os da una <b>pieza de la contraseña</b>
+        que desbloquea la salida.
+      </p>
+      <ol class="inicio__pruebas">
+        <li><b>Francotiradores de selectores</b><span>~10 min</span></li>
+        <li><b>Recoloca la escena</b> (position)<span>~17 min</span></li>
+        <li><b>Inspectores BEM</b><span>~12 min</span></li>
+      </ol>
+      <ul class="inicio__reglas">
+        <li>Cuantos menos intentos, más puntos. Las pistas cuestan puntos.</li>
+        <li>En la prueba 2 está <b>prohibido usar flex y grid</b>.</li>
+        <li>Podéis usar vuestros apuntes y MDN. <b>Abrir el código fuente de esta web</b> es trampa.</li>
+        <li>Si se acaba el tiempo, en la pestaña <b>Salida</b> tenéis vuestro código de puntuación para el profe.</li>
+      </ul>
+      <form class="inicio__form" id="form-inicio">
+        <label for="nombre-equipo">Nombre del equipo</label>
+        <div class="inicio__fila">
+          <input id="nombre-equipo" maxlength="24" autocomplete="off" placeholder="p. ej. Los Absolutos" required>
+          <button class="boton boton--grande" type="submit">Empezar ▸</button>
+        </div>
+      </form>
+      <div class="inicio__continuar" id="continuar" hidden>
+        <button class="boton boton--grande" id="boton-continuar" type="button"></button>
+        <button class="boton boton--fantasma" id="boton-nueva" type="button">Empezar una partida nueva</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Juego -->
+  <main class="juego" id="juego" hidden>
+    <nav class="pestanas" aria-label="Pruebas">
+      <button class="pestanas__boton" data-tab="p1"><span class="pestanas__num">1</span> Selectores</button>
+      <button class="pestanas__boton" data-tab="p2"><span class="pestanas__num">2</span> Position</button>
+      <button class="pestanas__boton" data-tab="p3"><span class="pestanas__num">3</span> BEM</button>
+      <button class="pestanas__boton pestanas__boton--salida" data-tab="fin"><span class="pestanas__num">🔓</span> Salida</button>
+    </nav>
+
+    <section class="prueba" id="tab-p1" hidden></section>
+    <section class="prueba" id="tab-p2" hidden></section>
+    <section class="prueba" id="tab-p3" hidden></section>
+    <section class="prueba" id="tab-fin" hidden></section>
+  </main>
+
+  <footer class="pie">
+    <span>Escape room CSS · DAW2 · Diseño de Interfaces Web</span>
+    <button class="pie__reiniciar" id="reiniciar" type="button" hidden>Reiniciar partida</button>
+  </footer>
+
+  <div class="avisos" id="avisos" aria-live="polite"></div>
+
+  <script src="js/datos.js"></script>
+  <script src="js/juego.js"></script>
+</body>
+</html>
